@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .work-experience {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .section-header {
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h1 class="text-center mb-0">Resume Generator</h1>
+                    </div>
+                    <div class="card-body">
+                        <form id="resumeForm" action="/generate_resume" method="post">
+                            <!-- Personal Information -->
+                            <div class="section-header">
+                                <h3>Personal Information</h3>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="name" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="mobile" class="form-label">Mobile Number</label>
+                                    <input type="tel" class="form-control" id="mobile" name="mobile" required>
+                                </div>
+                            </div>
+
+                            <!-- Professional Summary -->
+                            <div class="section-header">
+                                <h3>Professional Summary</h3>
+                            </div>
+                            <div class="mb-3">
+                                <textarea class="form-control" id="professional_summary" name="professional_summary" rows="4" required 
+                                    placeholder="Write a compelling professional summary that highlights your experience and skills"></textarea>
+                            </div>
+
+                            <!-- Professional Experience -->
+                            <div class="section-header d-flex justify-content-between align-items-center">
+                                <h3>Professional Experience</h3>
+                                <button type="button" class="btn btn-success" id="addExperience">
+                                    <i class="bi bi-plus"></i> Add Experience
+                                </button>
+                            </div>
+                            
+                            <div id="experiencesContainer">
+                                <div class="work-experience" data-experience-id="0">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Position/Title</label>
+                                            <input type="text" class="form-control position" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Company</label>
+                                            <input type="text" class="form-control company" required>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Company Address</label>
+                                        <input type="text" class="form-control address" required>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-5">
+                                            <label class="form-label">Start Date (Month/Year)</label>
+                                            <input type="month" class="form-control start-date" required>
+                                        </div>
+                                        <div class="col-md-5 end-date-container">
+                                            <label class="form-label">End Date (Month/Year)</label>
+                                            <input type="month" class="form-control end-date">
+                                        </div>
+                                        <div class="col-md-2 d-flex align-items-end mb-1">
+                                            <div class="form-check">
+                                                <input class="form-check-input current-job" type="checkbox" onchange="toggleEndDate(this)">
+                                                <label class="form-check-label">I currently work here</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Job Description</label>
+                                        <textarea class="form-control description" rows="3"></textarea>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-danger remove-experience" onclick="removeExperience(this)" style="display:none;">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Hidden input to store work experiences as JSON -->
+                            <input type="hidden" id="work_experiences" name="work_experiences" value="[]">
+
+                            <!-- Education -->
+                            <div class="section-header">
+                                <h3>Education</h3>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Institution/University</label>
+                                    <input type="text" class="form-control" id="education_institution" name="education_institution" required>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Degree</label>
+                                    <input type="text" class="form-control" id="education_degree" name="education_degree" required 
+                                        placeholder="e.g. Bachelor of Science">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Field of Study</label>
+                                    <input type="text" class="form-control" id="education_field" name="education_field" required
+                                        placeholder="e.g. Computer Science">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-5">
+                                    <label class="form-label">Start Date (Month/Year)</label>
+                                    <input type="month" class="form-control" id="education_start_date" name="education_start_date" required>
+                                </div>
+                                <div class="col-md-5" id="edu_end_date_container">
+                                    <label class="form-label">End Date (Month/Year)</label>
+                                    <input type="month" class="form-control" id="education_end_date" name="education_end_date">
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end mb-1">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="education_current" onchange="toggleEducationEndDate()">
+                                        <label class="form-check-label">Currently studying</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid gap-2 col-md-6 mx-auto mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">Generate Resume</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global counter for experience IDs
+        let experienceCounter = 1;
+        
+        // Function to toggle end date field based on "currently work here" checkbox
+        function toggleEndDate(checkbox) {
+            const experienceDiv = checkbox.closest('.work-experience');
+            const endDateContainer = experienceDiv.querySelector('.end-date-container');
+            const endDateInput = experienceDiv.querySelector('.end-date');
+            
+            if (checkbox.checked) {
+                endDateInput.value = '';
+                endDateInput.disabled = true;
+                endDateContainer.style.opacity = 0.5;
+            } else {
+                endDateInput.disabled = false;
+                endDateContainer.style.opacity = 1;
+            }
+        }
+        
+        // Function to toggle education end date
+        function toggleEducationEndDate() {
+            const checkbox = document.getElementById('education_current');
+            const endDateContainer = document.getElementById('edu_end_date_container');
+            const endDateInput = document.getElementById('education_end_date');
+            
+            if (checkbox.checked) {
+                endDateInput.value = '';
+                endDateInput.disabled = true;
+                endDateContainer.style.opacity = 0.5;
+            } else {
+                endDateInput.disabled = false;
+                endDateContainer.style.opacity = 1;
+            }
+        }
+        
+        // Function to add a new work experience section
+        document.getElementById('addExperience').addEventListener('click', function() {
+            const container = document.getElementById('experiencesContainer');
+            const template = document.querySelector('.work-experience').cloneNode(true);
+            
+            // Set a new ID for this experience block
+            template.setAttribute('data-experience-id', experienceCounter++);
+            
+            // Clear input values
+            template.querySelectorAll('input, textarea').forEach(input => {
+                input.value = '';
+            });
+            
+            // Make sure the "currently work here" checkbox is unchecked
+            template.querySelector('.current-job').checked = false;
+            
+            // Enable the end date
+            const endDateInput = template.querySelector('.end-date');
+            endDateInput.disabled = false;
+            template.querySelector('.end-date-container').style.opacity = 1;
+            
+            // Show the remove button for additional experiences
+            template.querySelector('.remove-experience').style.display = 'block';
+            
+            // Add the cloned template to the container
+            container.appendChild(template);
+        });
+        
+        // Function to remove a work experience section
+        function removeExperience(button) {
+            const experienceDiv = button.closest('.work-experience');
+            experienceDiv.remove();
+        }
+        
+        // Function to collect all work experience data before form submission
+        document.getElementById('resumeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect work experiences data
+            const experiences = [];
+            document.querySelectorAll('.work-experience').forEach(expDiv => {
+                const experience = {
+                    position: expDiv.querySelector('.position').value,
+                    company: expDiv.querySelector('.company').value,
+                    address: expDiv.querySelector('.address').value,
+                    start_date: expDiv.querySelector('.start-date').value,
+                    end_date: expDiv.querySelector('.end-date').value,
+                    current: expDiv.querySelector('.current-job').checked,
+                    description: expDiv.querySelector('.description').value
+                };
+                
+                // Format dates to be more readable
+                if (experience.start_date) {
+                    const startDate = new Date(experience.start_date);
+                    experience.start_date = startDate.toLocaleDateString('en-US', {
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                }
+                
+                if (experience.end_date && !experience.current) {
+                    const endDate = new Date(experience.end_date);
+                    experience.end_date = endDate.toLocaleDateString('en-US', {
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                }
+                
+                experiences.push(experience);
+            });
+            
+            // Store work experiences as JSON in the hidden input
+            document.getElementById('work_experiences').value = JSON.stringify(experiences);
+            
+            // Format education dates
+            const eduStartDate = document.getElementById('education_start_date').value;
+            if (eduStartDate) {
+                const startDate = new Date(eduStartDate);
+                const formattedStartDate = startDate.toLocaleDateString('en-US', {
+                    month: 'long',
+                    year: 'numeric'
+                });
+                // Create a hidden field for the formatted value instead of overwriting the original
+                const eduStartFormatted = document.createElement('input');
+                eduStartFormatted.type = 'hidden';
+                eduStartFormatted.name = 'education_start_date';
+                eduStartFormatted.value = formattedStartDate;
+                this.appendChild(eduStartFormatted);
+            }
+            
+            const eduEndDate = document.getElementById('education_end_date').value;
+            if (eduEndDate && !document.getElementById('education_current').checked) {
+                const endDate = new Date(eduEndDate);
+                const formattedEndDate = endDate.toLocaleDateString('en-US', {
+                    month: 'long',
+                    year: 'numeric'
+                });
+                // Create a hidden field for the formatted value instead of overwriting the original
+                const eduEndFormatted = document.createElement('input');
+                eduEndFormatted.type = 'hidden';
+                eduEndFormatted.name = 'education_end_date';
+                eduEndFormatted.value = formattedEndDate;
+                this.appendChild(eduEndFormatted);
+            }
+            
+            // Add education current status to a hidden field
+            const eduCurrentInput = document.createElement('input');
+            eduCurrentInput.type = 'hidden';
+            eduCurrentInput.name = 'education_current';
+            eduCurrentInput.value = document.getElementById('education_current').checked;
+            this.appendChild(eduCurrentInput);
+            
+            // Submit the form
+            this.submit();
+        });
+    </script>
+</body>
+</html>
